@@ -24,8 +24,6 @@ TEST(ThreadPoolTest, CreateThreadPoolAndAsk100Tasks)
 			{
 				for (int count = 0; count < 10; ++count)
 				{
-					std::lock_guard lock(mu);
-					std::cout << "count " << count << " from thread id " << std::this_thread::get_id() << std::endl;
 				}
 			});
 	}

@@ -7,7 +7,7 @@ file(GLOB TEST_SOURCES "*_test.cpp")
 
 message(STATUS "--- MY TEST SOURCES ARE: ${TEST_SOURCES} ---")
 
-add_executable(foundation_unit_tests ${TEST_SOURCES} )
+add_executable(foundation_unit_tests ${TEST_SOURCES}  "Stopwatch_test.cpp")
 
 # 2. Link against the targets provided by the find_package call
 target_link_libraries(foundation_unit_tests 
