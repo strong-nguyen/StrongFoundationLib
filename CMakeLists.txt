@@ -21,7 +21,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Add source to this project's executable.
-add_library(StrongFoundationLib "src/ThreadPool.h" "src/ThreadPool.cpp" "src/Stopwatch.h" "src/Stopwatch.cpp" "src/ScopeStopwatch.h" )
+add_library(StrongFoundationLib "src/ThreadPool.h" "src/ThreadPool.cpp" "src/Stopwatch.h" "src/Stopwatch.cpp" "src/ScopeStopwatch.h"  "src/StringHelper.h" "src/StringHelper.cpp")
 
 # if (CMAKE_VERSION VERSION_GREATER 3.12)
 #   set_property(TARGET StrongFoundationLib PROPERTY CXX_STANDARD 20)
