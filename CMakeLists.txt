@@ -11,11 +11,25 @@ endif()
 
 project ("StrongFoundationLib")
 
+# Set the global default standard to C++20
+set(CMAKE_CXX_STANDARD 20)
+
+# FORCE the compiler to fail the build if it doesn't support C++20
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Disable compiler-specific extensions (forces strict, portable ISO C++)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 # Add source to this project's executable.
-add_executable (StrongFoundationLib "StrongFoundationLib.cpp" "StrongFoundationLib.h" "src/ThreadPool.h" "src/ThreadPool.cpp")
+add_library(StrongFoundationLib "src/ThreadPool.h" "src/ThreadPool.cpp")
 
-if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET StrongFoundationLib PROPERTY CXX_STANDARD 20)
+# if (CMAKE_VERSION VERSION_GREATER 3.12)
+#   set_property(TARGET StrongFoundationLib PROPERTY CXX_STANDARD 20)
+# endif()
+
+option(BUILD_TESTING "Build the unit tests" ON)
+
+if(BUILD_TESTING)
+    # This tells CMake to go execute the CMakeLists.txt inside the /test folder
+    add_subdirectory(test)
 endif()
-
-# TODO: Add tests and install targets if needed.

@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <mutex>
 #include <functional>
+#include <future>
 
 
 namespace sf
@@ -23,12 +24,16 @@ namespace sf
     ~ThreadPool();
 
     template <typename Function, typename... Args>
-    void addTask(Function func, Args... args)
+    auto addTask(Function func, Args... args) -> std::future<typename std::invoke_result<Function, Args...>::type>
     {
-      // Package function and args into a lambda
-      auto lambda = [func = std::forward<Function>(func), ...args = std::forward<Args>(args)]()
+      // 1. Determine the return type of the function
+      using ReturnType = typename std::invoke_result<Function, Args...>::type;
+
+      auto task = std::make_shared<std::packaged_task<ReturnType()>>(std::bind(std::forward<Function>(func), std::forward<Args>(args)...));
+      std::future<ReturnType> result = task->get_future();
+      auto lambda = [task]()
         {
-          func(args...);
+          (*task)();
         };
 
       {
@@ -37,6 +42,8 @@ namespace sf
       }
 
       _taskNoti.notify_one();  // Notify a waiting thread
+
+      return result;
     }
 
     void stop(bool waitPendingTask = false);
