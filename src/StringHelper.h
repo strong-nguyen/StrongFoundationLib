@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <iterator>
 
 
 namespace sf
@@ -40,10 +42,8 @@ namespace sf
       using ReturnType = std::invoke_result_t<Function, const std::string&>;
       std::vector<ReturnType> results;
       results.reserve(tokens.size());
-      for (const std::string& token : tokens)
-      {
-        results.push_back(transform(token));
-      }
+
+      std::transform(tokens.begin(), tokens.end(), std::back_inserter(results), transform);
 
       return results;
     }
