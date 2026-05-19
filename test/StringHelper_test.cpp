@@ -115,3 +115,61 @@ TEST(StringHelperTest, TrimWith5TrailingSpaceV2)
   sfs::trim(str);
   EXPECT_EQ(str, "abc");
 }
+
+TEST(StringHelperTest, SplitEmptyStringWithEmptyDelimeter)
+{
+  auto tokens = sfs::splitStr("", "");
+  EXPECT_TRUE(tokens.empty());
+}
+
+TEST(StringHelperTest, SplitStringWithEmptyDelimeter)
+{
+  auto tokens = sfs::splitStr("abc abc", "");
+  EXPECT_TRUE(tokens.empty());
+}
+
+TEST(StringHelperTest, SplitStringWithSpaceDelimeter)
+{
+  auto tokens = sfs::splitStr("abcabc", " ");
+  EXPECT_EQ(tokens, std::vector<std::string>{"abcabc"});
+}
+
+TEST(StringHelperTest, SplitStringWithSpaceDelimeterV2)
+{
+  auto tokens = sfs::splitStr("abc abc", " ");
+  EXPECT_EQ(tokens, (std::vector<std::string>{"abc", "abc"}));
+}
+
+TEST(StringHelperTest, SplitStringWithSpaceDelimeterV3)
+{
+  auto tokens = sfs::splitStr("abc  abc", " ");
+  EXPECT_EQ(tokens, (std::vector<std::string>{"abc", "abc"}));
+}
+
+TEST(StringHelperTest, SplitStringWithCommaDelimeter)
+{
+  std::string str = "1,2,3,4,5";
+  std::string delimeter = ",";
+  auto tokens = sfs::splitStr(str, delimeter);
+  EXPECT_EQ(tokens, (std::vector<std::string>{"1", "2", "3", "4", "5"}));
+}
+
+TEST(StringHelperTest, SplitStringWithCommaDelimeterV2)
+{
+  std::string str = ",,,1,2,,,3,4,5,,";
+  std::string delimeter = ",";
+  auto tokens = sfs::splitStr(str, delimeter);
+  EXPECT_EQ(tokens, (std::vector<std::string>{"1", "2", "3", "4", "5"}));
+}
+
+TEST(StringHelperTest, SplitStringAndTransform)
+{
+  std::string str = ",,,1,2,,,3,4,5,,";
+  std::string delimeter = ",";
+  auto tokens = sfs::splitStr(str, delimeter, [](const std::string& token)
+    {
+      return std::stoi(token);
+    });
+
+  EXPECT_EQ(tokens, (std::vector<int>{1, 2, 3, 4, 5}));
+}
