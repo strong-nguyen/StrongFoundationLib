@@ -13,10 +13,9 @@ namespace sf
   public:
     FixedSizeBytePool(size_t capacity, size_t objectSize);
 
-    virtual ~FixedSizeBytePool()
-    {
-      delete[] _rawBuffer;
-    }
+    FixedSizeBytePool(const FixedSizeBytePool& other) = delete;
+
+    virtual ~FixedSizeBytePool();
 
     void* allocate();
 

@@ -107,7 +107,82 @@ TEST(FixedMemoryPoolTest, OverloadNewAndDeleteOperatorWithMemoryPool)
   EXPECT_EQ(Point3D::mp.countFree(), 10);
 }
 
-TEST(FixedMemoryPoolTest, AllocateDifferentTypeOfObject)
+TEST(FixedMemoryPoolTest, AllocateType)
 {
-  
+  sf::FixedSizeMemoryPool<Point2D> mp(10);
+  auto mem = mp.allocateType();
+  ASSERT_NE(mem, nullptr);
+  EXPECT_EQ(typeid(Point2D*), typeid(mem));
+
+  auto point1 = new (mem) Point2D(1.0, 2.0);
+  EXPECT_EQ(point1->x, 1.0);
+  EXPECT_EQ(point1->y, 2.0);
+
+  mp.deallocate(point1);
+}
+
+TEST(FixedMemoryPoolTest, CreateObject)
+{
+  sf::FixedSizeMemoryPool<Point2D> mp(10);
+  auto point1 = mp.create(1.0, 2.0);
+  ASSERT_NE(point1, nullptr);
+  EXPECT_EQ(point1->x, 1.0);
+  EXPECT_EQ(point1->y, 2.0);
+
+  mp.deallocate(point1);
+}
+
+TEST(TestFixedSizeBytePool, AllocateThenDeallocateOject)
+{
+  sf::FixedSizeBytePool mp(1, sizeof(Point2D));
+  auto mem = mp.allocate();
+  ASSERT_NE(mem, nullptr);
+
+  Point2D* point = new (mem) Point2D(1.0, 2.0);
+  EXPECT_EQ(point->x, 1.0);
+  EXPECT_EQ(point->y, 2.0);
+  EXPECT_EQ(mp.countFree(), 0);
+  mp.deallocate(point);
+  EXPECT_EQ(mp.countFree(), 1);
+}
+
+TEST(TestFixedSizeBytePool, Allocate1ThenDeallocateOject)
+{
+  sf::FixedSizeBytePool mp(1, sizeof(Point2D));
+  auto mem = mp.allocate();
+  ASSERT_NE(mem, nullptr);
+
+  Point2D* point = new (mem) Point2D(1.0, 2.0);
+  EXPECT_EQ(point->x, 1.0);
+  EXPECT_EQ(point->y, 2.0);
+  EXPECT_EQ(mp.countFree(), 0);
+  mp.deallocate(point);
+  EXPECT_EQ(mp.countFree(), 1);
+}
+
+TEST(TestFixedSizeBytePool, Allocate10ThenDeallocateOject)
+{
+  sf::FixedSizeBytePool mp(10, sizeof(Point2D));
+  std::vector<Point2D*> points;
+  points.reserve(10);
+  for (int i = 0; i < 10; ++i)
+  {
+    auto mem = mp.allocate();
+    ASSERT_NE(mem, nullptr);
+
+    Point2D* point = new (mem) Point2D(i, i);
+    points.push_back(point);
+  }
+
+  EXPECT_EQ(mp.countFree(), 0);
+  auto mem = mp.allocate();
+  EXPECT_EQ(mem, nullptr);
+  for (int i = 0; i < 10; ++i)
+  {
+    EXPECT_EQ(points[i]->x, (double)i);
+    EXPECT_EQ(points[i]->y, (double)i);
+    mp.deallocate(points[i]);
+  }
+
+  EXPECT_EQ(mp.countFree(), 10);
 }

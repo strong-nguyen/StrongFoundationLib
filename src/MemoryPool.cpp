@@ -19,6 +19,11 @@ sf::FixedSizeBytePool::FixedSizeBytePool(size_t capacity, size_t objectSize)
   }
 }
 
+sf::FixedSizeBytePool::~FixedSizeBytePool()
+{
+  delete[] _rawBuffer;
+}
+
 void* sf::FixedSizeBytePool::allocate()
 {
   if (_freeListHead)
