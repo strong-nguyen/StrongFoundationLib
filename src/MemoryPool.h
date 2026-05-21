@@ -1,86 +1,79 @@
 #pragma once
 
+#include <algorithm>
 
-/*
-* For the performance of MemoryPool, FixedSizeMemoryPool is not designed for thread-safe!
-*/
-template <typename T>
-class FixedSizeMemoryPool
+namespace sf
 {
-  struct Node
+  class FixedSizeBytePool
   {
-    Node* next = nullptr;  // Pointer to next node
+    struct Node
+    {
+      Node* next = nullptr;  // Pointer to next node
+    };
+  public:
+    FixedSizeBytePool(size_t capacity, size_t objectSize);
+
+    virtual ~FixedSizeBytePool()
+    {
+      delete[] _rawBuffer;
+    }
+
+    void* allocate();
+
+    void deallocate(void* object);
+
+    size_t countFree() const;
+
+  private:
+    size_t _capacity;
+    char* _rawBuffer;
+    Node* _freeListHead;
   };
-public:
-  FixedSizeMemoryPool(size_t capacity)
-    :
-    _capacity(capacity),
-    _freeListHead(nullptr)
-  {
-    _rawBuffer = new char[_capacity * BlockSize];
 
-    for (size_t i = 0; i < _capacity; ++i)
+
+  /*
+  * For the performance of MemoryPool, FixedSizeMemoryPool is not designed for thread-safe!
+  * This is the template version for FixedSizeMemoryPool
+  */
+  template <typename T>
+  class FixedSizeMemoryPool : public FixedSizeBytePool
+  {
+    struct Node
     {
-      Node* currentNode = reinterpret_cast<Node*>(_rawBuffer + i * BlockSize);
-
-      // The node will be insert in backward order: Node N -> ... -> Node 3 -> Node 2 -> Head
-      currentNode->next = _freeListHead;
-      _freeListHead = currentNode;
-    }
-  }
-
-  ~FixedSizeMemoryPool()
-  {
-    delete[] _rawBuffer;
-  }
-
-  void* allocate()
-  {
-    if (_freeListHead)
+      Node* next = nullptr;  // Pointer to next node
+    };
+  public:
+    FixedSizeMemoryPool(size_t capacity)
+      :
+      FixedSizeBytePool(capacity, sizeof(T))
     {
-      Node* availableNode = _freeListHead;
-      _freeListHead = _freeListHead->next;
-      return availableNode;
     }
 
-    // Out of memory
-    return nullptr;
-  }
+    ~FixedSizeMemoryPool() = default;
 
-  void deallocate(void* object)
-  {
-    if (!object)
+    T* allocateType()
     {
-      return;
+      void* mem = allocate();
+      if (!mem)
+      {
+        return nullptr;
+      }
+      else
+      {
+        return reinterpret_cast<T*>(mem);
+      }
     }
 
-    Node* node = reinterpret_cast<Node*>(object);
-    node->next = _freeListHead;
-    _freeListHead = node;
-  }
+    template <typename... Args>
+    T* create(Args&&... args) {
+      void* ptr = this->allocate();
+      if (!ptr) return nullptr;
 
-  size_t countFree() const
-  {
-    if (!_freeListHead)
-    {
-      return 0;
+      // Construct the object directly in the allocated pool slot
+      return ::new (ptr) T(std::forward<Args>(args)...);
     }
+  };
+}
 
-    size_t count = 0;
-    Node* head = _freeListHead;
-    while (head)
-    {
-      ++count;
-      head = head->next;
-    }
-    return count;
-  }
 
-private:
-  size_t _capacity;
-  char* _rawBuffer;
-  Node* _freeListHead;
 
-  // If object size is smaller than Node size, use Node size as slot size, else use object size
-  static constexpr size_t BlockSize = sizeof(T) < sizeof(Node) ? sizeof(Node) : sizeof(T);
-};

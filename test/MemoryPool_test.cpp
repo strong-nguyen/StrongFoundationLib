@@ -14,7 +14,7 @@ struct Point2D
 
 TEST(FixedMemoryPoolTest, Pool1ElementAllocateThenDeallocate)
 {
-  FixedSizeMemoryPool<Point2D> mp(1);
+  sf::FixedSizeMemoryPool<Point2D> mp(1);
 
   auto mem1 = mp.allocate();
   Point2D* point1 = new (mem1) Point2D(10.5, 9.5);
@@ -28,7 +28,7 @@ TEST(FixedMemoryPoolTest, Pool1ElementAllocateThenDeallocate)
 
 TEST(FixedMemoryPoolTest, Pool1ElementAllocateThenDeallocateThenAllocate)
 {
-  FixedSizeMemoryPool<Point2D> mp(1);
+  sf::FixedSizeMemoryPool<Point2D> mp(1);
 
   auto mem1 = mp.allocate();
   Point2D* point1 = new (mem1) Point2D(10.5, 9.5);
@@ -44,7 +44,7 @@ TEST(FixedMemoryPoolTest, Pool1ElementAllocateThenDeallocateThenAllocate)
 
 TEST(FixedMemoryPoolTest, Pool10ElementAllocateThenDeallocate)
 {
-  FixedSizeMemoryPool<Point2D> mp(10);
+  sf::FixedSizeMemoryPool<Point2D> mp(10);
   std::vector<Point2D*> points;
 
   for (int i = 0; i < 10; ++i)
@@ -74,7 +74,7 @@ struct Point3D
   double y = 0.0;
   double z = 0.0;
 
-  static FixedSizeMemoryPool<Point3D> mp;
+  static sf::FixedSizeMemoryPool<Point3D> mp;
 
   void* operator new(size_t size)
   {
@@ -87,7 +87,7 @@ struct Point3D
   }
 };
 
-FixedSizeMemoryPool<Point3D> Point3D::mp{ 10 };
+sf::FixedSizeMemoryPool<Point3D> Point3D::mp{ 10 };
 
 TEST(FixedMemoryPoolTest, OverloadNewAndDeleteOperatorWithMemoryPool)
 {
@@ -105,4 +105,9 @@ TEST(FixedMemoryPoolTest, OverloadNewAndDeleteOperatorWithMemoryPool)
   }
 
   EXPECT_EQ(Point3D::mp.countFree(), 10);
+}
+
+TEST(FixedMemoryPoolTest, AllocateDifferentTypeOfObject)
+{
+  
 }
