@@ -186,3 +186,117 @@ TEST(TestFixedSizeBytePool, Allocate10ThenDeallocateOject)
 
   EXPECT_EQ(mp.countFree(), 10);
 }
+
+
+struct Bytes8
+{
+  double val = 0.0;
+};
+
+struct Bytes16
+{
+  Bytes8 val1;
+  Bytes8 val2;
+
+  Bytes16(const Bytes8& val1_, const Bytes8& val2_)
+    :
+    val1{val1_},
+    val2{val2_}
+  {
+  }
+};
+
+struct Bytes32
+{
+  Bytes16 val1;
+  Bytes16 val2;
+
+  Bytes32(const Bytes16& val1_, const Bytes16& val2_)
+    :
+    val1{val1_},
+    val2{val2_}
+  {
+
+  }
+};
+
+struct Bytes64
+{
+  Bytes32 val1;
+  Bytes32 val2;
+};
+
+struct Bytes128
+{
+  Bytes64 val1;
+  Bytes64 val2;
+};
+
+struct Bytes256
+{
+  Bytes128 val1;
+  Bytes128 val2;
+};
+
+
+TEST(MultiMemoryPoolTest, MultiPool1AllocateThenDeallocate)
+{
+  sf::MultiMemoryPool mp(1);
+  auto mem = mp.allocate(sizeof(Bytes8));
+  EXPECT_NE(mem, nullptr);
+
+  Bytes8* object = new (mem) Bytes8{ 1.0 };
+  EXPECT_EQ(object->val, 1.0);
+  mem = mp.allocate(sizeof(Bytes8));
+  EXPECT_EQ(mem, nullptr);
+
+  mp.deallocate(object, sizeof(Bytes8));
+}
+
+TEST(MultiMemoryPoolTest, MultiPool10AllocateThenDeallocate)
+{
+  sf::MultiMemoryPool mp(10);
+
+  std::vector<std::pair<void*, int>> mems;
+  for (int bytes = 8; bytes <= 256; bytes += 8)
+  {
+    mems.push_back({ mp.allocate(bytes), bytes });
+  }
+
+  EXPECT_TRUE(!mems.empty());
+  for (const auto& e : mems)
+  {
+    if (e.first == nullptr)
+    {
+      continue;
+    }
+
+    if (e.second == 8)
+    {
+      Bytes8* mem = new (e.first) Bytes8{ 10.0 };
+      EXPECT_EQ(mem->val, 10.0);
+    }
+    else if (e.second == 16)
+    {
+      Bytes16* mem = new (e.first) Bytes16({ 10.0 }, { 20.0 });
+      EXPECT_EQ(mem->val1.val, 10.0);
+      EXPECT_EQ(mem->val2.val, 20.0);
+    }
+    else if (e.second == 32)
+    {
+      Bytes32* mem = reinterpret_cast<Bytes32*>(e.first);
+    }
+    else if (e.second == 64)
+    {
+      Bytes64* mem = reinterpret_cast<Bytes64*>(e.first);
+    }
+    else if (e.second == 128)
+    {
+      Bytes128* mem = reinterpret_cast<Bytes128*>(e.first);
+    }
+    else if (e.second == 256)
+    {
+      Bytes256* mem = reinterpret_cast<Bytes256*>(e.first);
+    }
+  }
+}

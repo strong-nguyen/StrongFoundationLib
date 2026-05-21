@@ -72,7 +72,39 @@ namespace sf
       return ::new (ptr) T(std::forward<Args>(args)...);
     }
   };
+
+
+  /*
+  * Multi MemoryPool contains a 
+  */
+  class MultiMemoryPool
+  {
+  public:
+    MultiMemoryPool(size_t capacity);
+
+    void* allocate(size_t bytes);
+
+    void deallocate(void* object, size_t bytes);
+
+    template <typename T, typename... Args>
+    T* create(Args&&... args)
+    {
+      void* ptr = this->allocate(sizeof(T));
+      if (!ptr) return nullptr;
+      return ::new (ptr) T(std::forward<Args>(args)...);
+    }
+
+    template <typename T>
+    void destroy(T* object)
+    {
+      if (!object) return;
+      object->~T();
+      this->deallocate(object, sizeof(T));
+    }
+
+  private:
+    int getPoolIndex(size_t bytes) const;
+
+    FixedSizeBytePool _pools[4];  // Contains 4 memory pool with size 32,64,128,256
+  };
 }
-
-
-
