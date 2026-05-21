@@ -97,12 +97,12 @@ TEST(FixedMemoryPoolTest, OverloadNewAndDeleteOperatorWithMemoryPool)
     points.push_back(new Point3D(i, i , i));
   }
 
-  EXPECT_EQ(Point3D::mp.countPoolFree(), 0);
+  EXPECT_EQ(Point3D::mp.countFree(), 0);
   for (int i = 0; i < 10; ++i)
   {
     delete points[i];
     points[i] = nullptr;
   }
 
-  EXPECT_EQ(Point3D::mp.countPoolFree(), 10);
+  EXPECT_EQ(Point3D::mp.countFree(), 10);
 }

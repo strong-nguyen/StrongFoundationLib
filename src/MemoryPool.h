@@ -1,6 +1,9 @@
 #pragma once
 
 
+/*
+* For the performance of MemoryPool, FixedSizeMemoryPool is not designed for thread-safe!
+*/
 template <typename T>
 class FixedSizeMemoryPool
 {
@@ -56,7 +59,7 @@ public:
     _freeListHead = node;
   }
 
-  size_t countPoolFree() const
+  size_t countFree() const
   {
     if (!_freeListHead)
     {
