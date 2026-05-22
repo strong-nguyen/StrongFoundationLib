@@ -190,52 +190,122 @@ TEST(TestFixedSizeBytePool, Allocate10ThenDeallocateOject)
 
 struct Bytes8
 {
-  double val = 0.0;
+  double val[1] = { 0.0 };
+
+  Bytes8(double number)
+  {
+    val[0] = number;
+  }
+
+  bool operator==(const Bytes8& other) const
+  {
+    return val[0] == other.val[0];
+  }
 };
 
 struct Bytes16
 {
-  Bytes8 val1;
-  Bytes8 val2;
+  double val[2] = { 0.0};
 
-  Bytes16(const Bytes8& val1_, const Bytes8& val2_)
-    :
-    val1{val1_},
-    val2{val2_}
+  Bytes16(std::initializer_list<double> arr)
   {
+    size_t i = 0;
+    for (double number : arr)
+    {
+      val[i++] = number;
+    }
+  }
+
+  bool operator==(const Bytes16& other) const
+  {
+    std::vector<double> mine(val, val + 2);
+    std::vector<double> otherVal(other.val, other.val + 2);
+    return mine == otherVal;
   }
 };
 
 struct Bytes32
 {
-  Bytes16 val1;
-  Bytes16 val2;
+  double val[4] = { 0.0 };
 
-  Bytes32(const Bytes16& val1_, const Bytes16& val2_)
-    :
-    val1{val1_},
-    val2{val2_}
+  Bytes32(std::initializer_list<double> arr)
   {
+    size_t i = 0;
+    for (double number : arr)
+    {
+      val[i++] = number;
+    }
+  }
 
+  bool operator==(const Bytes32& other) const
+  {
+    std::vector<double> mine(val, val + 4);
+    std::vector<double> otherVal(other.val, other.val + 4);
+    return mine == otherVal;
   }
 };
 
 struct Bytes64
 {
-  Bytes32 val1;
-  Bytes32 val2;
+  double val[8] = { 0.0 };
+
+  Bytes64(std::initializer_list<double> arr)
+  {
+    size_t i = 0;
+    for (double number : arr)
+    {
+      val[i++] = number;
+    }
+  }
+
+  bool operator==(const Bytes64& other) const
+  {
+    std::vector<double> mine(val, val + 8);
+    std::vector<double> otherVal(other.val, other.val + 8);
+    return mine == otherVal;
+  }
 };
 
 struct Bytes128
 {
-  Bytes64 val1;
-  Bytes64 val2;
+  double val[16] = { 0.0 };
+
+  Bytes128(std::initializer_list<double> arr)
+  {
+    size_t i = 0;
+    for (double number : arr)
+    {
+      val[i++] = number;
+    }
+  }
+
+  bool operator==(const Bytes128& other) const
+  {
+    std::vector<double> mine(val, val + 16);
+    std::vector<double> otherVal(other.val, other.val + 16);
+    return mine == otherVal;
+  }
 };
 
 struct Bytes256
 {
-  Bytes128 val1;
-  Bytes128 val2;
+  double val[32] = { 0.0 };
+
+  Bytes256(std::initializer_list<double> arr)
+  {
+    size_t i = 0;
+    for (double number : arr)
+    {
+      val[i++] = number;
+    }
+  }
+
+  bool operator==(const Bytes256& other) const
+  {
+    std::vector<double> mine(val, val + 32);
+    std::vector<double> otherVal(other.val, other.val + 32);
+    return mine == otherVal;
+  }
 };
 
 
@@ -246,7 +316,7 @@ TEST(MultiMemoryPoolTest, MultiPool1AllocateThenDeallocate)
   EXPECT_NE(mem, nullptr);
 
   Bytes8* object = new (mem) Bytes8{ 1.0 };
-  EXPECT_EQ(object->val, 1.0);
+  EXPECT_EQ(object->val[0], 1.0);
   mem = mp.allocate(sizeof(Bytes8));
   EXPECT_EQ(mem, nullptr);
 
@@ -255,7 +325,7 @@ TEST(MultiMemoryPoolTest, MultiPool1AllocateThenDeallocate)
 
 TEST(MultiMemoryPoolTest, MultiPool10AllocateThenDeallocate)
 {
-  sf::MultiMemoryPool mp(10);
+  sf::MultiMemoryPool mp(100);
 
   std::vector<std::pair<void*, int>> mems;
   for (int bytes = 8; bytes <= 256; bytes += 8)
@@ -274,29 +344,49 @@ TEST(MultiMemoryPoolTest, MultiPool10AllocateThenDeallocate)
     if (e.second == 8)
     {
       Bytes8* mem = new (e.first) Bytes8{ 10.0 };
-      EXPECT_EQ(mem->val, 10.0);
+      EXPECT_EQ(mem->val[0], 10.0);
     }
     else if (e.second == 16)
     {
-      Bytes16* mem = new (e.first) Bytes16({ 10.0 }, { 20.0 });
-      EXPECT_EQ(mem->val1.val, 10.0);
-      EXPECT_EQ(mem->val2.val, 20.0);
+      Bytes16* mem = new (e.first) Bytes16({ 1.0, 2.0 });
+      EXPECT_EQ((*mem), (Bytes16({ 1.0, 2.0 })));
     }
     else if (e.second == 32)
     {
-      Bytes32* mem = reinterpret_cast<Bytes32*>(e.first);
+      Bytes32* mem = new (e.first) Bytes32({10.0, 20.0, 30.0, 40.0});
+      EXPECT_EQ((*mem), (Bytes32({ 10.0, 20.0, 30.0, 40.0 })));
     }
     else if (e.second == 64)
     {
-      Bytes64* mem = reinterpret_cast<Bytes64*>(e.first);
+      Bytes64* mem = new (e.first) Bytes64({ 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0 });
+      EXPECT_EQ((*mem), (Bytes64({ 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0 })));
     }
     else if (e.second == 128)
     {
-      Bytes128* mem = reinterpret_cast<Bytes128*>(e.first);
+      Bytes128* mem = new (e.first) Bytes128({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16});
+      EXPECT_EQ((*mem), (Bytes128({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 })));
     }
     else if (e.second == 256)
     {
-      Bytes256* mem = reinterpret_cast<Bytes256*>(e.first);
+      Bytes256* mem = new (e.first) Bytes256({1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ,26, 27, 28, 29, 30 , 31, 32});
+      EXPECT_EQ((*mem), (Bytes256({ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25 ,26, 27, 28, 29, 30 , 31, 32 })));
     }
   }
+}
+
+TEST(MultiMemoryPoolTest, MultiPool10CreateThenDestroy)
+{
+  sf::MultiMemoryPool mp(10);
+  auto byte8 = mp.create<Bytes8>(1.0);
+  ASSERT_NE(byte8, nullptr);
+  EXPECT_EQ(typeid(byte8), typeid(Bytes8*));
+  EXPECT_EQ(byte8->val[0], 1.0);
+
+  auto byte16 = mp.create<Bytes16>(std::initializer_list<double>{ 1.0, 2.0 });
+  ASSERT_NE(byte16, nullptr);
+  EXPECT_EQ(typeid(byte16), typeid(Bytes16*));
+  EXPECT_EQ(*byte16, (Bytes16{1.0, 2.0}));
+
+  mp.destroy(byte8);
+  mp.destroy(byte16);
 }
