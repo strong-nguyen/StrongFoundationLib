@@ -132,7 +132,7 @@ TEST(FixedMemoryPoolTest, CreateObject)
   mp.deallocate(point1);
 }
 
-TEST(TestFixedSizeBytePool, AllocateThenDeallocateOject)
+TEST(FixedSizeBytePoolTest, AllocateThenDeallocateOject)
 {
   sf::FixedSizeBytePool mp(1, sizeof(Point2D));
   auto mem = mp.allocate();
@@ -146,7 +146,7 @@ TEST(TestFixedSizeBytePool, AllocateThenDeallocateOject)
   EXPECT_EQ(mp.countFree(), 1);
 }
 
-TEST(TestFixedSizeBytePool, Allocate1ThenDeallocateOject)
+TEST(FixedSizeBytePoolTest, Allocate1ThenDeallocateOject)
 {
   sf::FixedSizeBytePool mp(1, sizeof(Point2D));
   auto mem = mp.allocate();
@@ -160,7 +160,7 @@ TEST(TestFixedSizeBytePool, Allocate1ThenDeallocateOject)
   EXPECT_EQ(mp.countFree(), 1);
 }
 
-TEST(TestFixedSizeBytePool, Allocate10ThenDeallocateOject)
+TEST(FixedSizeBytePoolTest, Allocate10ThenDeallocateOject)
 {
   sf::FixedSizeBytePool mp(10, sizeof(Point2D));
   std::vector<Point2D*> points;
