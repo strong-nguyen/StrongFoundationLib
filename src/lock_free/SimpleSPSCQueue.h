@@ -61,8 +61,7 @@ namespace sf
 
     bool empty() const
     {
-      // We use acquire memory order here to make sure we see
-      // the newest nodes pushed by the producer thread.
+      // We use acquire memory order here to make sure we see the newest nodes pushed by the producer thread.
       Node *current_head = _head.load(std::memory_order_acquire);
       return current_head->next.load(std::memory_order_acquire) == nullptr;
     }
